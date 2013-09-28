@@ -12,6 +12,7 @@
 %\documentclass{frontiersMED} % for Medicine articles
 
 \usepackage{url,lineno}
+\usepackage{graphicx}
 \linenumbers
 
 % Leave a blank line between paragraphs in stead of using \\
@@ -93,7 +94,12 @@ We also discuss the limitations of the gala library and how we intend to address
 %For Clinical Case Studies the Introduction should include symptoms at presentation, physical exams and lab results.
 %
 
-Connectomics, the elucidation of complete neuronal circuits, (large image volumes, neurons are segments in image).
+Connectomics, the elucidation of complete neuronal circuits, requires resolutions as low as 5-10nm to distinguish the smallest neuronal processes, but also fields of view of hundreds of micrometers or larger, as neurons can easily span those distances.
+This size disparity results in large image volumes of at least 10 gigavoxels and often orders of magnitude larger than even this.
+Neurons can then be thought of as segments in this image.
+Finally, by marking the position of pre- and post-synaptic sites in the image, one can obtain the shapes, locations, and connectivity of all the neurons in an enormous image volume.
+
+Until recently, the rate-limiting step has been the proofreading of the automatic segmentation \cite{Chklovskii:2010df}
 
 We recently developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd}.
 Description of GALA algorithm.
@@ -120,6 +126,11 @@ Use SNEMI3D example.
 \section{Design}
 
 \subsection{N-dimensional array support}
+Many segmentation libraries assume 2D or 3D data (REFS).
+Thanks to numpy's ndarray support, and because all operations in our algorithm depend only on the definition of the local neighborhood, it was feasible to design gala to be dimension-agnostic.
+By defining a neighbor function, that takes in a pixel index, a shape, and a connectivity parameter, and calling this function instead of manually computing on indices, gala segments numpy array volumes of arbitrary dimension.
+
+(Usage examples of neighbors function and nd support.)
 
 \subsection{Feature managers and feature caches}
 
