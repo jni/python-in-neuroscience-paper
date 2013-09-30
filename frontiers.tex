@@ -87,6 +87,7 @@ We also discuss the limitations of the gala library and how we intend to address
  \keyFont{ \section{Keywords:} connectomics, python, electron microscopy, image segmentation, machine learning} %All article types: you may provide up to 8 keywords; at least 5 are mandatory.
 \end{abstract}
 
+
 \section{Introduction}
 
 % For Original Research Articles, Clinical Trial Articles, and Technology Reports the introduction should be succinct, with no subheadings.
@@ -107,7 +108,9 @@ GALA is state of the art. outperformed previous agglomeration methods in EM and 
 
 We briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
 
+
 \section{API}
+
 
 \subsection{Python API}
 
@@ -119,11 +122,14 @@ Highlight evaluate module
 
 Mention NeuroProof
 
+
 \subsection{Command-line interface}
 
 Use SNEMI3D example.
 
+
 \section{Design}
+
 
 \subsection{N-dimensional array support}
 Many segmentation libraries assume 2D or 3D data (REFS).
@@ -131,6 +137,7 @@ Thanks to numpy's ndarray support, and because all operations in our algorithm d
 By defining a neighbor function, that takes in a pixel index, a shape, and a connectivity parameter, and calling this function instead of manually computing on indices, gala segments numpy array volumes of arbitrary dimension.
 
 (Usage examples of neighbors function and nd support.)
+
 
 \subsection{Feature managers and feature caches}
 
