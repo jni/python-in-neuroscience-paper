@@ -151,7 +151,17 @@ We therefore devised a single class, which we call a feature manager, that is re
 
 \subsection{Classifier abstraction}
 
-Using established interfaces future-proofs software.
+Given the vast heterogeneity of our initial feature space, we wished to use a random forest (RF) as our classifier of choice.
+When we started building gala, \texttt{scikit-learn}, the present gold-standard in machine learning Python libraries, did not include RF.
+We therefore decided to use Vigra, a C++ image analysis and machine learning library with Python bindings.
+However, we recognized that a cross-compatible interface across libraries would allow rapid testing of various machine learning techniques.
+We therefore built a wrapper around Vigra to match \texttt{scikit-learn}'s estimator interface, particularly the \texttt{fit()}, \texttt{predict()}, and \texttt{predict\_proba()} methods.
+
+Because of this, it is trivially easy to use different classifiers for the learning and agglomeration steps of \texttt{gala}.
+In particular, we have been able to use the recently vastly improved \texttt{RandomForestClassifier} from \texttt{scikit-learn} version 0.14 with zero code changes.
+
+In short, by using established interfaces, we were able to future-proof our software.
+We recommend that anyone looking to build software in the Python ecosystem take a long look at related libraries to match interfaces as close as possible.
 
 \section{Discussion}
 
