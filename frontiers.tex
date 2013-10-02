@@ -176,6 +176,21 @@ We recommend that anyone looking to build software in the Python ecosystem take 
 
 \subsection{Memory and time inefficiency}
 
+Numerous improvements and low-hanging fruit are possible.
+
+Firstly, we currently store feature caches and compute feature vectors as separate arrays.
+This results in a huge time overhead for large graphs due to memory allocation, and also in memory usage because of the dictionaries required to store all the separate arrays.
+However, because we are performing a hierarchical agglomeration, we know that the number of nodes and edges is bounded by twice the initial number.
+Therefore, we can pre-allocate an initial array of shape \texttt{(2 * n\_nodes, cache\_size)} for the node feature caches, and similarly for the edges, and use an incremental indexing scheme to keep track of which node or edge in the hierarchy uses which row of the array.
+
+Additionally, the graph currently stores indices to the voxels comprising each node and boundary, which is unnecessary.
+Space and time can be saved by keeping only a single voxel and rebuilding nodes using a flood fill.
+
+Finally, we chose the heavy \texttt{Graph} class of the NetworkX library for its flexibility and fast node addition and removal.
+However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{scipy.sparse.csc\_graph}, and maintain a merge tree.
+The graph at any level of the hierarchy can be rapidly constructed from this.
+
+
 \section{Conclusions}
 
 
