@@ -180,6 +180,10 @@ Gala supports an alternative backend, NeuroProof, that uses a C++ RAG based on t
 
 \subsection{Complete gold standard requirement}
 
+As currently implemented, gala requires a fully segmented volume from which to learn.
+In our experiments, this has become the major bottleneck to getting segmentation of new data started.
+Therefore, a major priority in gala development going forward is the ability to "mask" volumes so that partial ground truth can be used.
+
 \subsection{Memory and time inefficiency}
 
 Numerous improvements and low-hanging fruit are possible.
