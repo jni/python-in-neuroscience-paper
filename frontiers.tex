@@ -149,7 +149,7 @@ An example of a critical feature when determining the probability that two segme
 As segments are merged, the shared surface between them and their common neighbors increases, thereby making the average a more reliable estimate of the true probability of a boundary.
 Recomputing the mean from scratch, however, results in quadratic time complexity, because we are repeatedly iterating over the same pixels after each merge.
 Therefore, a more efficient strategy is to cache a sum of the pixel probabilities and the count of pixels examined.
-Then, when two boundaries are combines, their probability sums are added together, as are their counts, and the new average probability can be computed by dividing the new sum by the new count, in constant time.
+Then, when two boundaries are combined, their probability sums are added together, as are their counts, and the new average probability can be computed by dividing the new sum by the new count, in constant time.
 This caching has turned a quadratic operation into a linear one.
 
 The above concept can be generalized to *any* feature.
