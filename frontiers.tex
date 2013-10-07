@@ -98,9 +98,9 @@ We also discuss the limitations of the gala library and how we intend to address
 Connectomics, the elucidation of complete neuronal circuits, requires resolutions as low as 5-10nm to distinguish the smallest neuronal processes, but also fields of view of hundreds of micrometers or larger, as neurons can easily span those distances.
 This size disparity results in large image volumes of at least 10 gigavoxels and often orders of magnitude larger than even this.
 Neurons can then be thought of as segments in this image.
-Finally, by marking the position of pre- and post-synaptic sites in the image, one can obtain the shapes, locations, and connectivity of all the neurons in an enormous image volume.
+Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image (REFs: synapse detection packages), one can obtain the shapes, locations, and connectivity of all the neurons in an image volume.
 
-Until recently, the rate-limiting step has been the proofreading of the automatic segmentation \cite{Chklovskii:2010df}
+Until recently, the rate-limiting step has been the proofreading of the automatic segmentation \cite{Chklovskii:2010df}.
 
 We recently developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd}.
 Description of GALA algorithm.
