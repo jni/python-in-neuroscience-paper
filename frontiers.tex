@@ -152,9 +152,9 @@ Therefore, a more efficient strategy is to cache a sum of the pixel probabilitie
 Then, when two boundaries are combined, their probability sums are added together, as are their counts, and the new average probability can be computed by dividing the new sum by the new count, in constant time.
 This caching has turned a quadratic operation into a linear one.
 
-The above concept can be generalized to *any* feature.
+The above concept can be generalized to \emph{any} feature.
 We found that, in many cases, caching intermediate computations dramatically improved the time complexity of feature computation.
-For example, to compute the *variance* of the pixel probabilities, we must cache the sum of the *squared* pixel probabilities, along with simple sum and counts.
+For example, to compute the \emph{variance} of the pixel probabilities, we must cache the sum of the \emph{squared} pixel probabilities, along with simple sum and counts.
 To compute a histogram, we cache the unnormalised histogram, and each bin is summed when two boundaries are combined.
 
 We therefore devised a single class, which we call a feature manager, that is responsible for defining the cached values, and for computing the feature vector from the cached values.
