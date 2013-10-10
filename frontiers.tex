@@ -111,13 +111,32 @@ Furthermore, through the probability output of the classifier, it can estimate i
 Gala is state of the art and outperformed previous agglomeration methods in EM and natural image segmentation.
 Further, it is currently top-ranked in SNEMI3D challenge, above 2D-specific methods (REF).
 
-We briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
+In this paper, we briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
 
 
 \section{API}
 
 
 \subsection{Python API}
+
+Gala has three main prerequisites:
+\begin{itemize}
+\item a pixel-level \emph{probability map}, usually the \emph{probability of boundary}; and
+\item a \emph{superpixel map} (or supervoxel), an initial fine-grained segmentation; and
+\item a \emph{gold standard segmentation}, that represents the true segmentation of a training volume.
+\end{itemize}
+
+For the first one, we have used Ilastik (REF) in our own work on EM images, gPb (REF) for natural images, or the probability maps provided by (REF: Ciresan) for the SNEMI3D challenge.
+As you can see, gala is agnostic about the origin of the input probability maps, both theoretically and in this implementation.
+Furthermore, these can have any number of channels, such as probability of various other kinds of pixel types (mitochondria, vesicles, glia) or the output of texture filters at that pixel.
+
+For the second point, we have used the watershed algorithm (REF: Vincent/Soille 91), but other methods, such as SLIC (REF) would work.
+(Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{scikit-image}, which is more efficient and works both in 2D and 3D.)
+Again, the only requirement here is that the input volume is partitioned into some integer labeled regions.
+The algorithm that generated the partition is not important.
+
+
+
 
 Main gala pipeline
 
@@ -127,6 +146,7 @@ Highlight evaluate module
 
 Mention NeuroProof
 
+\subsection{Segmentation evaluation module}
 
 \subsection{Command-line interface}
 
