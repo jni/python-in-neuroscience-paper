@@ -100,15 +100,16 @@ This size disparity results in large image volumes of at least 10 gigavoxels and
 Neurons can then be thought of as segments in this image.
 Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image (REFs: synapse detection packages), one can obtain the shapes, locations, and connectivity of all the neurons in an image volume.
 
-Until recently, the rate-limiting step has been the proofreading of the automatic segmentation \citep{Chklovskii:2010df}.
+Until recently, the rate-limiting step has been the proofreading of the automatic segmentation  \citep{Chklovskii:2010df}.
+As a response, we developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd} which, in addition to providing state of the art automatic segmentation accuracy, directs proofreaders to likely areas of error in the segmentation.
+This has dramatically sped up proofreading and reconstruction speed (5-16-fold, in our anecdotal observations).
 
-We recently developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd}.
+The algorithm, called Gala (graph-based active learning of agglomeration), works by repeatedly consulting a gold standard segmentation (prepared by expert human annotators) as it agglomerates sub-segments according to its current best guess.
+It therefore accumulates a training dataset that prevents it from repeating past mistakes.
+Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
-Description of GALA algorithm.
-
-GALA is state of the art. outperformed previous agglomeration methods in EM and natural image segmentation.
-
-Top-ranked in SNEMI3D challenge, above 2D-specific methods.
+Gala is state of the art and outperformed previous agglomeration methods in EM and natural image segmentation.
+Further, it is currently top-ranked in SNEMI3D challenge, above 2D-specific methods (REF).
 
 We briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
 
