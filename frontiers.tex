@@ -135,7 +135,10 @@ For the second point, we have used the watershed algorithm (REF: Vincent/Soille 
 Again, the only requirement here is that the input volume is partitioned into some integer labeled regions.
 The algorithm that generated the partition is not important.
 
-
+The final requirement is a completely segmented image to be used as ground truth.
+For neuronal EM images, we used ground truth segmentation generated with the open-source Raveler software (REF), while a large ground truth body exists with the Berkeley Segmentation Data Set (BSDS) (REF).
+For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
+This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
 
 
 Main gala pipeline
