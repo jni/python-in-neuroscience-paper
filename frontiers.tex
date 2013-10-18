@@ -140,6 +140,10 @@ For neuronal EM images, we used ground truth segmentation generated with the ope
 For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
 This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
 
+Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{gala.agglo.Rag.learn\_agglomerate}).
+This produces a training set, to which we can fit a classifier, which will then prioritize merges in a test volume to segment.
+
+(EXAMPLE CODE FOR THE PIPELINE).
 
 Main gala pipeline
 
