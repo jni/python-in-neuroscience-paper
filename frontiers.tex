@@ -151,6 +151,13 @@ Mention NeuroProof
 
 \subsection{Segmentation evaluation module}
 
+One of the most generally reusable parts of the gala library is the evaluation module in \texttt{gala/evaluate.py}.
+It offers efficient implementations of edit distance (REF), Rand Index (REF), Adjusted Rand Index (REF), Fowlkes-Malik index (REF), and Variation of Information (VI) (REF).
+Among these, we focused the most effort on the VI metric for its numerous advantages (REF).
+Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easily done with the \texttt{vi\_by\_threshold} function.
+
+(EXAMPLE CODE AND FIGURES)
+
 \subsection{Command-line interface}
 
 Use SNEMI3D example.
