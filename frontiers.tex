@@ -140,7 +140,7 @@ For neuronal EM images, we used ground truth segmentation generated with the ope
 For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
 This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
 
-Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{gala.agglo.Rag.learn\_agglomerate}).
+Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{Rag.learn\_agglomerate}).
 This produces a training set, to which we can fit a classifier, which will then prioritize merges in a test volume to segment.
 
 (EXAMPLE CODE FOR THE PIPELINE).
@@ -151,14 +151,6 @@ Ability to implement related algorithms: mean, median, flat learning, LASH
 
 Highlight evaluate module
 
-As a workaround for gala's memory efficiency issues, Steve Plaza developed an alternative interface called NeuroProof (REF: NP Repo), which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
-NeuroProof implements region adjacency graphs in C++ using the Boost Graph Library (REF).
-Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
-This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
-NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
-(The reference \texttt{agglo.Rag} implementation can also output to this format.)
-Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
-In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
 \subsection{Segmentation evaluation module}
 
@@ -222,7 +214,14 @@ We recommend that anyone looking to build software in the Python ecosystem take 
 
 \subsection{Alternate backends}
 
-Gala supports an alternative backend, NeuroProof, that uses a C++ RAG based on the Boost Graph Library with Python bindings (Plaza and Parag, in preparation).
+As a workaround for gala's memory efficiency issues, Steve Plaza developed an alternative interface called NeuroProof (REF: NP Repo), which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
+NeuroProof implements region adjacency graphs in C++ using the Boost Graph Library (REF).
+Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
+This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
+NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
+(The reference \texttt{agglo.Rag} implementation can also output to this format.)
+Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
+In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
 \subsection{Complete gold standard requirement}
 
@@ -243,9 +242,8 @@ Additionally, the graph currently stores indices to the voxels comprising each n
 Space and time can be saved by keeping only a single voxel and rebuilding nodes using a flood fill.
 
 Finally, we chose the heavy \texttt{Graph} class of the NetworkX library for its flexibility and fast node addition and removal.
-However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{scipy.sparse.csc\_graph}, and maintain a merge tree.
+However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{scipy.sparse.csc\_graph}) and maintain a merge tree.
 The graph at any level of the hierarchy can be rapidly constructed from this.
-
 
 \section{Conclusions}
 
