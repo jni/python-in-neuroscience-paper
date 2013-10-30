@@ -223,8 +223,39 @@ Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easi
 
 \subsection{Command-line interface}
 
-Use SNEMI3D example.
+In addition to the flexible Python library interface, we developed a set of command-line scripts to perform common gala functions, such as training and segmenting.
+This is the primary way of interacting with gala in a production environment.
+For example, after determining suitable watershed parameters in an IPython environment (REF), these two function calls gave our top-ranked entry to the SNEMI3D challenge (REF):
 
+{\small
+\begin{minted}[samepage=true]{bash}
+$ ~/projects/gala/bin/gala-train -e 5 \
+    -F 'features.base.Composite(children=[\
+                       features.moments.Manager(), \
+                       features.histogram.Manager(25, 0, 1, [0.1, 0.5, 0.9]), \
+                       features.graph.Manager()])' \
+    -w train-2d-watershed.lzf.h5 \
+    --output-dir ~/data/snemi3d/ \
+    --experiment-name sn2d-opt \
+    --no-channel-data \
+    train-probabilities.lzf.h5 train-labels.lzf.h5 
+
+$ ~/projects/gala/bin/gala-segment -C \
+    -F 'features.base.Composite(children=[\
+                       features.moments.Manager(), \
+                       features.histogram.Manager(25, 0, 1, [0.1, 0.5, 0.9]), \
+                       features.graph.Manager()])' \
+    -w test-2d-watershed.lzf.h5 \
+    --output-dir ~/data/snemi3d \
+    -k sn2d-opt.classifier.h5 \
+    -t `seq -s ' ' -f %.2f 0 0.01 1` \
+    -R -J \
+    --experiment-name sn2d-opt \
+    test-probabilities.lzf.h5
+\end{minted}
+}
+
+(Description of above code)
 
 \section{Design}
 
