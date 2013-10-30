@@ -151,7 +151,14 @@ Ability to implement related algorithms: mean, median, flat learning, LASH
 
 Highlight evaluate module
 
-Mention NeuroProof
+As a workaround for gala's memory efficiency issues, Steve Plaza developed an alternative interface called NeuroProof (REF: NP Repo), which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
+NeuroProof implements region adjacency graphs in C++ using the Boost Graph Library (REF).
+Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
+This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
+NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
+(The reference \texttt{agglo.Rag} implementation can also output to this format.)
+Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
+In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
 \subsection{Segmentation evaluation module}
 
