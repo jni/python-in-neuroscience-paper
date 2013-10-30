@@ -147,7 +147,7 @@ This produces a training set, to which we can fit a classifier, which will then 
 These operations are illustrated in the following code snippet, which can be run from gala's \texttt{tests/example-data} directory:
 
 {\small
-\begin{minted}[linenos, numbersep=5pt, samepage=true]{python}
+\begin{minted}[samepage=true]{python}
 # imports
 from gala import imio, classify, features, agglo, evaluate as ev
 
@@ -184,7 +184,7 @@ seg_test1 = g_test.get_segmentation()
 We've made gala \emph{multichannel agnostic}, so that \texttt{agglo.Rag} and all of the existing feature managers can receive as input a multichannel probability map and transparently compute the corresponding features.
 
 {\small
-\begin{minted}[linenos, numbersep=5pt, firstnumber=31, samepage=true]{python}
+\begin{minted}[samepage=true]{python}
 # the same approach works with a multi-channel probability map
 p4_train = imio.read_h5_stack('train-p4.lzf.h5')
 # note: the feature manager works transparently with multiple channels!
@@ -204,7 +204,7 @@ seg_test4 = g_test4.get_segmentation()
 Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary (REF), median boundary, "flat" learning (ie learning on the original superpixel map), and LASH (REF).
 
 {\small
-\begin{minted}[linenos, numbersep=5pt, firstnumber=44, samepage=true]{python}
+\begin{minted}[samepage=true]{python}
 g_testm = agglo.Rag(ws_test, pr_test,
                     merge_priority_function=agglo.boundary_mean)
 g_testm.agglomerate(0.5)
@@ -306,7 +306,6 @@ However, this is ultimately unnecessary: we can just keep the original supervoxe
 The graph at any level of the hierarchy can be rapidly constructed from this.
 
 \section{Conclusions}
-
 
 %%% Use this if adding the figures directly in the mansucript, if so, please remember to also upload the files when submitting your article
 %%% There is no need for adding the file termination, as long as you indicate where the file is saved. In the examples below the files (logo1.jpg and logo2.eps) are in the Frontiers LaTeX folder
