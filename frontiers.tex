@@ -264,19 +264,50 @@ The other options are self-explanatory, and finally, the two positional argument
 \texttt{\small gala-segment} has similar options, with \texttt{ \small -R} disabling the Raveler format \citep{raveler} used in Janelia and \texttt{ \small -J} disabling NeuroProof JSON output (see section \ref{section:np} and \cite{np}).
 Meanwhile, \texttt{\small -t} indicates the agglomeration thresholds at which segmentations should be output.
 
-In addition to the command line interface, most of the options are available through a JSON configuration file format.
+Finally, in addition to the command line interface, the options above are available through a JSON configuration file format.
 
 
 \section{Design}
 
 
 \subsection{N-dimensional array support}
-Many segmentation libraries assume 2D or 3D data (REFS).
-Thanks to numpy's ndarray support, and because all operations in our algorithm depend only on the definition of the local neighborhood, it was feasible to design gala to be dimension-agnostic.
-By defining a neighbor function, that takes in a pixel index, a shape, and a connectivity parameter, and calling this function instead of manually computing on indices, gala segments numpy array volumes of arbitrary dimension.
 
-(Usage examples of neighbors function and nd support.)
+Many segmentation libraries assume 2D or 3D data, or provide separate functions for each (see, for example, \cite{slic-website}, or many OpenCV functions).
 
+We instead abstracted away the notion of a neighboring pixel (or voxel) with a \texttt{\small get\_neighbor\_idxs} function that depends only on the pixel coordinates, the shape of the array, and the connectivity parameter, defined as the number of dimensions one can simultaneously step along to get to a neighbor.
+All operations in our algorithm depend only on the definition of the local neighborhood. 
+It was thus feasible to design all of gala to be dimension-agnostic.
+This allowed us to produce segmentations of the Berkeley segmentation dataset \citep{MartinFTM01} and a 3D EM dataset from the same code base.
+
+Numpy's \texttt{\small ndarray} object in particular has made reasoning about n-dimensional data extremely easy.
+We present below the \texttt{\small get\_neighbor\_idxs} function to illustrate the advantages provided by the Python, numpy, and the ndarray object.
+
+{\small
+\begin{minted}[samepage=true]{python}
+def get_neighbor_idxs(ar, idxs, connectivity=1):
+    strides = array(ar.strides)/ar.itemsize
+    if connectivity == 1: 
+        steps = (strides, -strides)
+    else:
+        steps = []
+        for i in range(1, connectivity+1):
+            prod = array(list(it.product(*([[1, -1]] * i))))
+            i_strides = array(list(it.combinations(strides, i))).T
+            steps.append(prod.dot(i_strides).ravel())
+    return idxs[:, newaxis] + concatenate(steps)
+\end{minted}
+}
+
+We highlight the niceties of doing this in Python:
+\begin{itemize}
+\item the strides and itemsize elements of numpy arrays make it very easy to compute on linear indices and thus in n-dimensions transparently.
+\item the itertools module of the Python standard library gives us combinations of moving forward or back along each dimension of the array.
+\item numpy's array broadcasting rules allow concise, fast computation of neighboring indices simultaneously for a large number of input indices.
+\end{itemize}
+
+A great many algorithms in computer vision can be parameterized by neighboring voxels.
+Thus, we encourage developers to write these in n-dimensional logic from the start to increase the range of applications of their software.
+(Having said that, we assumed isotropic data, which has been rather limiting in places!)
 
 \subsection{Feature managers and feature caches}
 
@@ -317,8 +348,8 @@ We recommend that anyone looking to build software in the Python ecosystem take 
 \subsection{Complete gold standard requirement}
 
 As currently implemented, gala requires a fully segmented volume from which to learn.
-In our experiments, this has become the major bottleneck to getting segmentation of new data started.
-Therefore, a major priority in gala development going forward is the ability to "mask" volumes so that partial ground truth can be used.
+In our experiments, this has become the major bottleneck when starting segmentations on new data.
+Therefore, a major priority in gala development going forward is the ability to mask volumes so that partial ground truth can be used.
 
 \subsection{Memory and time inefficiency}
 
