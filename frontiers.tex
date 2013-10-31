@@ -133,7 +133,7 @@ As you can see, gala is agnostic about the origin of the input probability maps,
 Furthermore, these can have any number of channels, such as probability of various other kinds of pixel types (mitochondria, vesicles, glia) or the output of texture filters at that pixel.
 
 For the second point, we have used the watershed algorithm (REF: Vincent/Soille 91), but other methods, such as SLIC (REF) would work.
-(Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{scikit-image}, which is more efficient and works both in 2D and 3D.)
+(Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{ \small scikit-image}, which is more efficient and works both in 2D and 3D.)
 Again, the only requirement here is that the input volume is partitioned into some integer labeled regions.
 The algorithm that generated the partition is not important.
 
@@ -142,9 +142,9 @@ For neuronal EM images, we used ground truth segmentation generated with the ope
 For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
 This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
 
-Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{Rag.learn\_agglomerate}).
+Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{ \small gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{ \small Rag.learn\_agglomerate}).
 This produces a training set, to which we can fit a classifier, which will then prioritize merges in a test volume to segment.
-These operations are illustrated in the following code snippet, which can be run from gala's \texttt{tests/example-data} directory:
+These operations are illustrated in the following code snippet, which can be run from gala's \texttt{ \small tests/example-data} directory:
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -181,7 +181,7 @@ seg_test1 = g_test.get_segmentation()
 \end{minted}
 }
 
-We've made gala \emph{multichannel agnostic}, so that \texttt{agglo.Rag} and all of the existing feature managers can receive as input a multichannel probability map and transparently compute the corresponding features.
+We've made gala \emph{multichannel agnostic}, so that \texttt{ \small agglo.Rag} and all of the existing feature managers can receive as input a multichannel probability map and transparently compute the corresponding features.
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -214,10 +214,10 @@ seg_testm = g_testm.get_segmentation()
 
 \subsection{Segmentation evaluation module}
 
-One of the most generally reusable parts of the gala library is the evaluation module in \texttt{gala/evaluate.py}.
+One of the most generally reusable parts of the gala library is the evaluation module in \texttt{ \small gala/evaluate.py}.
 It offers efficient implementations of edit distance (REF), Rand Index (REF), Adjusted Rand Index (REF), Fowlkes-Malik index (REF), and Variation of Information (VI) (REF).
 Among these, we focused the most effort on the VI metric for its numerous advantages (REF).
-Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easily done with the \texttt{vi\_by\_threshold} function.
+Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easily done with the \texttt{ \small vi\_by\_threshold} function.
 
 (EXAMPLE CODE AND FIGURES)
 
@@ -225,7 +225,7 @@ Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easi
 
 In addition to the flexible Python library interface, we developed a set of command-line scripts to perform common gala functions, such as training and segmenting.
 This is the primary way of interacting with gala in a production environment.
-For example, after determining suitable watershed parameters in an IPython environment (REF), these two function calls gave our top-ranked entry to the SNEMI3D challenge (REF):
+For example, after determining suitable watershed parameters in an IPython environment \citep{Perez:2007}, these two commands gave our currently top-ranked entry to the SNEMI3D challenge \citep{snemi}:
 
 {\small
 \begin{minted}[samepage=true]{bash}
@@ -255,7 +255,17 @@ $ ~/projects/gala/bin/gala-segment -C \
 \end{minted}
 }
 
-(Description of above code)
+The commands, though onerous, are quite simple.
+(And, since they are based on \texttt{ \small argparse}, both will provide helpful descriptions when presented with a \texttt{ \small -h} flag.)
+
+In \texttt{ \small gala-train}, \texttt{ \small -e} indicates the number of training epochs (see \cite{NunezIglesias:2013cd} for details), \texttt{ \small -F} indicates the feature manager, specified as a Python expression, and \texttt{ \small -w} indicates the superpixel map.
+The other options are self-explanatory, and finally, the two positional arguments are the probability map and the ground truth label volume.
+
+\texttt{\small gala-segment} has similar options, with \texttt{ \small -R} disabling the Raveler format \citep{raveler} used in Janelia and \texttt{ \small -J} disabling NeuroProof JSON output (see section \ref{section:np} and \cite{np}).
+Meanwhile, \texttt{\small -t} indicates the agglomeration thresholds at which segmentations should be output.
+
+In addition to the command line interface, most of the options are available through a JSON configuration file format.
+
 
 \section{Design}
 
@@ -289,13 +299,13 @@ We therefore devised a single class, which we call a feature manager, that is re
 \subsection{Classifier abstraction}
 
 Given the vast heterogeneity of our initial feature space, we wished to use a random forest (RF) as our classifier of choice.
-When we started building gala, \texttt{scikit-learn}, the present gold-standard in machine learning Python libraries, did not include RF.
+When we started building gala, \texttt{ \small scikit-learn}, the present gold-standard in machine learning Python libraries, did not include RF.
 We therefore decided to use Vigra, a C++ image analysis and machine learning library with Python bindings.
 However, we recognized that a cross-compatible interface across libraries would allow rapid testing of various machine learning techniques.
-We therefore built a wrapper around Vigra to match \texttt{scikit-learn}'s estimator interface, particularly the \texttt{fit()}, \texttt{predict()}, and \texttt{predict\_proba()} methods.
+We therefore built a wrapper around Vigra to match \texttt{ \small scikit-learn}'s estimator interface, particularly the \texttt{ \small fit()}, \texttt{ \small predict()}, and \texttt{ \small predict\_proba()} methods.
 
-Because of this, it is trivially easy to use different classifiers for the learning and agglomeration steps of \texttt{gala}.
-In particular, we have been able to use the recently vastly improved \texttt{RandomForestClassifier} from \texttt{scikit-learn} version 0.14 with zero code changes.
+Because of this, it is trivially easy to use different classifiers for the learning and agglomeration steps of \texttt{ \small gala}.
+In particular, we have been able to use the recently vastly improved \texttt{ \small RandomForestClassifier} from \texttt{ \small scikit-learn} version 0.14 with zero code changes.
 
 In short, by using established interfaces, we were able to future-proof our software.
 We recommend that anyone looking to build software in the Python ecosystem take a long look at related libraries to match interfaces as close as possible.
@@ -317,23 +327,24 @@ Numerous improvements and low-hanging fruit are possible.
 Firstly, we currently store feature caches and compute feature vectors as separate arrays.
 This results in a huge time overhead for large graphs due to memory allocation, and also in memory usage because of the dictionaries required to store all the separate arrays.
 However, because we are performing a hierarchical agglomeration, we know that the number of nodes and edges is bounded by twice the initial number.
-Therefore, we can pre-allocate an initial array of shape \texttt{(2 * n\_nodes, cache\_size)} for the node feature caches, and similarly for the edges, and use an incremental indexing scheme to keep track of which node or edge in the hierarchy uses which row of the array.
+Therefore, we can pre-allocate an initial array of shape \texttt{ \small (2 * n\_nodes, cache\_size)} for the node feature caches, and similarly for the edges, and use an incremental indexing scheme to keep track of which node or edge in the hierarchy uses which row of the array.
 
 Additionally, the graph currently stores indices to the voxels comprising each node and boundary, which is unnecessary.
 Space and time can be saved by keeping only a single voxel and rebuilding nodes using a flood fill.
 
-Finally, we chose the heavy \texttt{Graph} class of the NetworkX library for its flexibility and fast node addition and removal.
-However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{scipy.sparse.csc\_graph}) and maintain a merge tree.
+Finally, we chose the heavy \texttt{ \small Graph} class of the NetworkX library for its flexibility and fast node addition and removal.
+However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{ \small scipy.sparse.csc\_graph}) and maintain a merge tree.
 The graph at any level of the hierarchy can be rapidly constructed from this.
 
 \subsection{Alternate backends}
+\label{section:np}
 
-As a workaround for gala's memory efficiency issues, we developed an alternative interface called NeuroProof \citep{np}, which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
+As a workaround for gala's memory efficiency issues, we developed an alternative interface called NeuroProof \citep{np}, which can be used as the backend for the gala algorithm by calling the \texttt{ \small Stack} class in \texttt{ \small gala.stack\_np} instead of \texttt{ \small agglo.Rag}.
 NeuroProof implements region adjacency graphs in C++, with an optional translation layer to the Boost Graph Library \citep{bgl}.
 Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
 This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
 NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
-(The reference \texttt{agglo.Rag} implementation can also output to this format.)
+(The reference \texttt{ \small agglo.Rag} implementation can also output to this format.)
 Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
 In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
