@@ -100,20 +100,23 @@ We also discuss the limitations of the gala library and how we intend to address
 Connectomics, the elucidation of complete neuronal circuits, requires resolutions as low as 5-10nm to distinguish the smallest neuronal processes, but also fields of view of hundreds of micrometers or larger, as neurons can easily span those distances.
 This size disparity results in large image volumes of at least 10 gigavoxels and often orders of magnitude larger than even this.
 Neurons can then be thought of as segments in this image.
-Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image (REFs: synapse detection packages), one can obtain the shapes, locations, and connectivity of all the neurons in an image volume.
+Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image \citep{Kreshuk:2011el, Jagadeesh:2013wn}, one can obtain the shapes, locations, and connectivity of all the neurons in an image volume.
 
 Until recently, the rate-limiting step has been the proofreading of the automatic segmentation  \citep{Chklovskii:2010df}.
 As a response, we developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd} which, in addition to providing state of the art automatic segmentation accuracy, directs proofreaders to likely areas of error in the segmentation.
 This has dramatically sped up proofreading and reconstruction speed (5-16-fold, in our anecdotal observations).
 
-The algorithm, called Gala (graph-based active learning of agglomeration), works by repeatedly consulting a gold standard segmentation (prepared by expert human annotators) as it agglomerates sub-segments according to its current best guess.
+The algorithm, called GALA (graph-based active learning of agglomeration), works by repeatedly consulting a gold standard segmentation (prepared by human annotators) as it agglomerates sub-segments according to its current best guess.
+(Note: throughout this paper, we will use "GALA" to describe the algorithm, and "gala" or "Gala" for the Python library and software.)
 It therefore accumulates a training dataset that prevents it from repeating past mistakes.
 Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
-Gala is state of the art and outperformed previous agglomeration methods in EM and natural image segmentation.
-Further, it is currently top-ranked in SNEMI3D challenge, above 2D-specific methods (REF).
+GALA outperformed previous agglomeration methods in EM and natural image segmentation.
+Further, it remains top-ranked in the SNEMI3D challenge, above tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv}.
 
 In this paper, we briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
+
+(FIGURE: SEGMENTATION EXAMPLES: FIB, BSDS, SNEMI)
 
 
 \section{API}
@@ -121,24 +124,24 @@ In this paper, we briefly present the Python application programming interface (
 
 \subsection{Python API}
 
-Gala has three main prerequisites:
+GALA has three main prerequisites:
 \begin{itemize}
 \item a pixel-level \emph{probability map}, usually the \emph{probability of boundary}; and
 \item a \emph{superpixel map} (or supervoxel), an initial fine-grained segmentation; and
 \item a \emph{gold standard segmentation}, that represents the true segmentation of a training volume.
 \end{itemize}
 
-For the first one, we have used Ilastik (REF) in our own work on EM images, gPb (REF) for natural images, or the probability maps provided by (REF: Ciresan) for the SNEMI3D challenge.
+For the first one, we have used Ilastik \citep{ilastik} in our own work on EM images, gPb \citep{globalpb} for natural images, or the probability maps provided by \citep{Ciresan:2012vi} for the SNEMI3D challenge.
 As you can see, gala is agnostic about the origin of the input probability maps, both theoretically and in this implementation.
 Furthermore, these can have any number of channels, such as probability of various other kinds of pixel types (mitochondria, vesicles, glia) or the output of texture filters at that pixel.
 
-For the second point, we have used the watershed algorithm (REF: Vincent/Soille 91), but other methods, such as SLIC (REF) would work.
-(Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{ \small scikit-image}, which is more efficient and works both in 2D and 3D.)
+For the second point, we have used the watershed algorithm \citep{Vincent:1991}, but other methods, such as SLIC \citep{Achanta:2012wc} would work.
+(Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{\small scikit-image}, which is more efficient and works both in 2D and 3D.)
 Again, the only requirement here is that the input volume is partitioned into some integer labeled regions.
 The algorithm that generated the partition is not important.
 
 The final requirement is a completely segmented image to be used as ground truth.
-For neuronal EM images, we used ground truth segmentation generated with the open-source Raveler software (REF), while a large ground truth body exists with the Berkeley Segmentation Data Set (BSDS) (REF).
+For neuronal EM images, we used ground truth segmentation generated with the open-source Raveler software \citep{raveler}, while a large ground truth body exists with the Berkeley Segmentation Data Set (BSDS) \citep{MartinFTM01}.
 For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
 This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
 
@@ -150,28 +153,22 @@ These operations are illustrated in the following code snippet, which can be run
 \begin{minted}[samepage=true]{python}
 # imports
 from gala import imio, classify, features, agglo, evaluate as ev
-
 # read in training data
 gt_train, pr_train, ws_train = (map(imio.read_h5_stack,
                                 ['train-gt.lzf.h5', 'train-p1.lzf.h5',
                                  'train-ws.lzf.h5']))
-
 # create a feature manager
 fm = features.moments.Manager()
 fh = features.histogram.Manager()
 fc = features.base.Composite(children=[fm, fh])
-
 # create graph and obtain a training dataset
 g_train = agglo.Rag(ws_train, pr_train, feature_manager=fc)
 (X, y, w, merges) = g_train.learn_agglomerate(gt_train, fc)[0]
 y = y[:, 0] # gala has 3 truth labeling schemes, pick the first one
-print(X.shape, y.shape) # standard scikit-learn input format
-
 # train a classifier, scikit-learn syntax
 rf = classify.DefaultRandomForest().fit(X, y)
 # a policy is the composition of a feature map and a classifier
 learned_policy = agglo.classifier_probability(fc, rf)
-
 # get the test data and make a RAG with the trained policy
 pr_test, ws_test = (map(imio.read_h5_stack,
                         ['test-p1.lzf.h5', 'test-ws.lzf.h5']))
@@ -201,7 +198,7 @@ seg_test4 = g_test4.get_segmentation()
 \end{minted}
 }
 
-Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary (REF), median boundary, "flat" learning (ie learning on the original superpixel map), and LASH (REF).
+Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary \citep{Arbelaez:jg}, median boundary, superpixel affinity learning \citep{Ren:2003jg} (which we also call "flat" learning), and LASH \citep{Jain:2011vr}.
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -215,11 +212,13 @@ seg_testm = g_testm.get_segmentation()
 \subsection{Segmentation evaluation module}
 
 One of the most generally reusable parts of the gala library is the evaluation module in \texttt{ \small gala/evaluate.py}.
-It offers efficient implementations of edit distance (REF), Rand Index (REF), Adjusted Rand Index (REF), Fowlkes-Malik index (REF), and Variation of Information (VI) (REF).
-Among these, we focused the most effort on the VI metric for its numerous advantages (REF).
-Thus, computing a set of VIs from an ultrametric contour map (UCM) (REF) is easily done with the \texttt{ \small vi\_by\_threshold} function.
+It offers efficient implementations of edit distance, Rand Index \citep{Rand:1971uy}, Adjusted Rand Index \citep{Hubert:1985}, Fowlkes-Mallows index \citep{Fowlkes:1983wz}, and Variation of Information (VI) \citep{meila:2005}.
+Among these, we focused the most effort on the VI metric for its numerous advantages \citep{meila:2005, NunezIglesias:2013cd}.
+Thus, computing a set of VIs from an ultrametric contour map (UCM) \citep{Arbelaez:jg} is easily done with the \texttt{ \small vi\_by\_threshold} function.
 
-(EXAMPLE CODE AND FIGURES)
+(EXAMPLE CODE)
+
+(FIGURE: SPLIT VI PLOT, VI BREAKDOWN PLOT)
 
 \subsection{Command-line interface}
 
@@ -267,8 +266,11 @@ Meanwhile, \texttt{\small -t} indicates the agglomeration thresholds at which se
 Finally, in addition to the command line interface, the options above are available through a JSON configuration file format.
 
 
-\section{Design}
+\section{Design highlights}
 
+The core of gala is the agglo.Rag class, which inherits from NetworkX's Graph class.
+This region adjacency graph performs the agglomerative segmentation, whether learned or unsupervised.
+However, its design is rather humdrum, so in this section we focus on a few design elements that we consider essential to gala's success.
 
 \subsection{N-dimensional array support}
 
@@ -311,7 +313,7 @@ Thus, we encourage developers to write these in n-dimensional logic from the sta
 
 \subsection{Feature managers and feature caches}
 
-An example of a critical feature when determining the probability that two segments should be merged is the average pixel-level probability of boundary (REFS).
+An example of a critical feature when determining the probability that two segments should be merged is the average pixel-level probability of boundary \citep{Ren:2003jg}.
 As segments are merged, the shared surface between them and their common neighbors increases, thereby making the average a more reliable estimate of the true probability of a boundary.
 Recomputing the mean from scratch, however, results in quadratic time complexity, because we are repeatedly iterating over the same pixels after each merge.
 Therefore, a more efficient strategy is to cache a sum of the pixel probabilities and the count of pixels examined.
@@ -325,7 +327,7 @@ To compute a histogram, we cache the unnormalised histogram, and each bin is sum
 
 We therefore devised a single class, which we call a feature manager, that is responsible for defining the cached values, and for computing the feature vector from the cached values.
 
-(Anirban's paragraphs about inclusiveness go here)
+(ANIRBAN INCLUSIVENESS)
 
 \subsection{Classifier abstraction}
 
@@ -380,6 +382,11 @@ Currently, NeuroProof exists as a completely separate alternative interface with
 In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
 \section{Conclusions}
+
+Like most academic software, gala is a hodgepodge of new algorithms, \emph{some} good design, and a variety of questionable decisions left over from a time of different priorities, but we hope that the existing and future functionality, the better parts of the software, and the lessons learned will be of value to the wider research community.
+Don Knuth's famous maxim that "premature optimization is the root of all evil" \citep{knuth74opt} should not be followed too deeply: in our case, this has led to time and memory performance issues that have been difficult to back out of.
+Still, gala's success in segmenting not only the isotropic EM volume for which it was designed \citep{Glasner:2011uk, NunezIglesias:2013cd}, but also the BSDS natural image dataset and the SNEMI3D anisotropic EM dataset, suggests that it will be useful for some time to come.
+
 
 %%% Use this if adding the figures directly in the mansucript, if so, please remember to also upload the files when submitting your article
 %%% There is no need for adding the file termination, as long as you indicate where the file is saved. In the examples below the files (logo1.jpg and logo2.eps) are in the Frontiers LaTeX folder
