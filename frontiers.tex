@@ -304,17 +304,6 @@ We recommend that anyone looking to build software in the Python ecosystem take 
 \section{Discussion}
 
 
-\subsection{Alternate backends}
-
-As a workaround for gala's memory efficiency issues, Steve Plaza developed an alternative interface called NeuroProof (REF: NP Repo), which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
-NeuroProof implements region adjacency graphs in C++ using the Boost Graph Library (REF).
-Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
-This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
-NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
-(The reference \texttt{agglo.Rag} implementation can also output to this format.)
-Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
-In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
-
 \subsection{Complete gold standard requirement}
 
 As currently implemented, gala requires a fully segmented volume from which to learn.
@@ -336,6 +325,17 @@ Space and time can be saved by keeping only a single voxel and rebuilding nodes 
 Finally, we chose the heavy \texttt{Graph} class of the NetworkX library for its flexibility and fast node addition and removal.
 However, this is ultimately unnecessary: we can just keep the original supervoxel graph using a much more efficient structure (such as \texttt{scipy.sparse.csc\_graph}) and maintain a merge tree.
 The graph at any level of the hierarchy can be rapidly constructed from this.
+
+\subsection{Alternate backends}
+
+As a workaround for gala's memory efficiency issues, we developed an alternative interface called NeuroProof \citep{np}, which can be used as the backend for the gala algorithm by calling the \texttt{Stack} class in \texttt{gala.stack\_np} instead of \texttt{agglo.Rag}.
+NeuroProof implements region adjacency graphs in C++ using the Boost Graph Library (REF).
+Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
+This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
+NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
+(The reference \texttt{agglo.Rag} implementation can also output to this format.)
+Currently, NeuroProof exists as a completely separate alternative interface within the gala library, which is more efficient .
+In the future, we intend to unify the two, and possibly more, by using a backend selection mechanism at runtime.
 
 \section{Conclusions}
 
