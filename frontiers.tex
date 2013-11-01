@@ -326,8 +326,21 @@ For example, to compute the \emph{variance} of the pixel probabilities, we must 
 To compute a histogram, we cache the unnormalised histogram, and each bin is summed when two boundaries are combined.
 
 We therefore devised a single class, which we call a feature manager, that is responsible for defining the cached values, and for computing the feature vector from the cached values.
+This has enabled less obvious features such as many based on the convex hull of the segment.
+The convex hull feature manager stores as a cache the convex hull of each node.
+When two nodes are merged, the resulting convex hull can be computed faster by starting from the two initial hulls, rather than the newly formed segment.
+The manager then uses the hull to compute features such as segment convexity, by comparing the volume of the convex hull to the volume of the segment.
 
-(ANIRBAN INCLUSIVENESS)
+Developing a feature manager is easy: subclassing \texttt{\small features.base.Null}, dropping the \texttt{.py} file in the features folder, and optionally updating the \texttt{\small \_\_init\_\_.py} for easy import.
+As an example, a recently added feature manager is the so-called ``inclusiveness''.
+In 3D EM images, it is not biologically plausible that one segment would be enclosed within another.
+Early on, we developed the idea of removing these inclusions by automatically merging the enclosed segment to the enveloping one, regardless of merge priority.
+However, we later realised that this is only the endpoint of a continuous set of features that we called "inclusiveness".
+These include, for a pair of nodes $u$ and $v$, the size of the boundary between $u$ and $v$ divided by the total size of all boundaries around $u$, as well as the size divided by all the boundaries around $v$.
+
+The GitHub pull request creating this manager can be found at:
+
+\url{https://github.com/jni/ray/pulls?direction=desc&page=1&sort=created&state=closed}
 
 \subsection{Classifier abstraction}
 
