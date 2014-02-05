@@ -99,16 +99,23 @@ We also discuss the current limitations of the gala library and how we intend to
 
 Connectomics, the elucidation of complete neuronal circuits, requires resolutions as low as 5-10nm to distinguish the smallest neuronal processes, but also fields of view hundreds of micrometers across or more, as neurons can easily span those distances.
 This size disparity results in large image volumes of at least 10 gigavoxels and often orders of magnitude larger.
-Neurons can then be thought of as segments in this image.
-Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image \citep{Kreshuk:2011el, Jagadeesh:2013wn}, one can obtain the shapes, locations, and connectivity of all the neurons in an image volume.
+Neurons are visible as distinct regions, or segments, in this 3-dimensional image volume.
+Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image \citep{Kreshuk:2011el, Jagadeesh:2013wn}, one can obtain the shapes, locations, and connectivity of all the neurons in an image volume, as has been demonstrated in (REFS: Chklovskii 2013, Helmstaedter 2013).
 
-Until recently, the rate-limiting step has been the proofreading of the automatic segmentation  \citep{Chklovskii:2010df}.
-In response, we developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd} which, in addition to providing state of the art automatic segmentation accuracy, directs proofreaders to likely areas of error in the segmentation.
+Various methods have been proposed (and implemented) to go from images to neuronal morphology and connectivity.
+(REF) used manual tracing of the midline of neuronal processes, along with manual annotation of synapses, to analyze a neuronal circuit.
+(REF) refined this approach by having multiple individuals trace the same neuron, thus allowing them to estimate the error rate of their traces.
+Manual tracing, however, cannot scale to the reconstruction of large neuronal circuits (REFS).
+An alternate strategy, then, has been to use automatic segmentation of the neurons in the image volume, followed by human proofreading of this segmentation \citep{Chklovskii:2010df}.
+Until recently, this proofreading was the rate-limiting step for neuronal reconstruction from EM images, for two reasons:
+first, the segmentation algorithms were (and still are) orders of magnitude too inaccurate to reconstruct even a single neuron without errors;
+and second, the human proofreaders had to examine every voxel of the image, even if the automatic segmentation is correct.
+In response, we developed a new machine learning-based algorithm for image segmentation \citep{NunezIglesias:2013cd} that provides state of the art automatic segmentation accuracy and then directs proofreaders to likely areas of error in the segmentation.
 This has dramatically sped up proofreading and reconstruction speed (5-16-fold, in our anecdotal observations).
 
 The algorithm, called GALA (graph-based active learning of agglomeration), works by repeatedly consulting a gold standard segmentation (prepared by human annotators) as it agglomerates sub-segments according to its current best guess.
 (Note: throughout this paper, we will use "GALA" to describe the algorithm, and "gala" or "Gala" for the Python library and software.)
-It therefore accumulates a training dataset that prevents it from repeating past mistakes.
+It thus accumulates a training dataset used to fit a classifier, which guides subsequent agglomeration decisions.
 Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
 GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remains top-ranked in the SNEMI3D challenge, over tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv}.
