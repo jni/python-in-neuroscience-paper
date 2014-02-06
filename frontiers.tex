@@ -138,7 +138,14 @@ We briefly present the Python application programming interface (API) and the co
 
 \subsection{Python API}
 
-GALA has three main prerequisites:
+GALA belongs a class of segmentation algorithms called agglomerative algorithms, in which segments are formed by merging smaller segments.
+Other examples include mean agglomeration (REF), the graphical models of (REF), and Learning to Agglomerate Superpixel Hierarchies (LASH) (REF), which is most similar to GALA.
+Agglomerative methods begin with an initial fine-grained segmentation known as an \emph{oversegmentation} or \emph{superpixel map}.
+The superpixel approach allows a massive reduction in computational cost, enabling the use of more sophisticated algorithms in the agglomerative step (REF).
+Additionally, it allows the use of different strategies to group pixels and regions, which may have very different properties (REF).
+
+GALA uses machine learning to obtain a merge priority function or policy, which dictates which pair of segments to merge next.
+It has three main prerequisites to learn this function:
 \begin{itemize}
 \item a pixel-level \emph{probability map}, usually the \emph{probability of boundary}; and
 \item a \emph{superpixel map} (or supervoxel), an initial fine-grained segmentation; and
