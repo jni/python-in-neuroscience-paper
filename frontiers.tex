@@ -147,24 +147,25 @@ Additionally, it allows the use of different strategies to group pixels and regi
 GALA uses machine learning to obtain a merge priority function or policy, which dictates which pair of segments to merge next.
 It has three main prerequisites to learn this function:
 \begin{itemize}
-\item a pixel-level \emph{probability map}, usually the \emph{probability of boundary}; and
 \item a \emph{superpixel map} (or supervoxel), an initial fine-grained segmentation; and
-\item a \emph{gold standard segmentation}, that represents the true segmentation of a training volume.
+\item a \emph{gold standard segmentation}, that represents the true segmentation of a training volume; and
+\item a pixel-level intensity map, which is optional but required for most features.
+    This is usually the \emph{probability of boundary} between segments, but can be other things, such as the probability of the pixel belonging to a glial cell, or to an image of a cat (REF). The map can even be the input image itself.
+    Indeed, gala allows multi-channel pixel-level maps that are the concatenation of some or all of the above maps.
 \end{itemize}
 
-For the first requirement, we have used Ilastik \citep{ilastik} in our own work on EM images, gPb \citep{globalpb} for natural images, or the probability maps provided by \cite{Ciresan:2012vi} for the SNEMI3D challenge.
-As you can see, gala is agnostic about the origin of the input probability maps, both theoretically and in this implementation.
-Furthermore, these can have any number of channels, such as probability of various other kinds of pixel types (mitochondria, vesicles, glia) or the output of texture filters at that pixel.
-
-For the second point, we have used the watershed algorithm \citep{Vincent:1991}, but other methods, such as SLIC \citep{Achanta:2012wc} would work.
+For the first requirement, we have used the watershed algorithm \citep{Vincent:1991}, but other methods, such as SLIC \citep{Achanta:2012wc} would work.
 Gala itself contains an implementation of watershed, although for some parameter sets we just wrap the implementation in \texttt{\small scikit-image}, which is more efficient and works both in 2D and 3D.
-Again, the only requirement here is that the input volume is partitioned into some integer labeled regions.
-The algorithm that generated the partition is not important.
+Again, the only requirement here is that the input volume is partitioned into some integer-labeled regions, and that these regions do not cross true segment boundaries, at least approximately.
+The algorithm that generates this initial oversegmentation is not important.
 
-The final requirement is a completely segmented image to be used as ground truth.
-For neuronal EM images, we used ground truth segmentation generated with the open-source Raveler software \citep{raveler}, while a large ground truth body exists with the Berkeley Segmentation Data Set (BSDS) \citep{MartinFTM01}.
+The second requirement is a completely segmented image to be used as ground truth.
+For neuronal EM images, we used ground truth segmentation generated with the open-source Raveler software \citep{raveler}, while a large ground truth body exists for natural images in the Berkeley Segmentation Data Set (BSDS) \citep{MartinFTM01}.
 For other images, such as 3D fluorescence microscopy images, generation of ground truth can be a laborious process.
 This has indeed become the rate-limiting step in a gala segmentation, so we are moving to eliminate this requirement so that only a subset of ground truth is needed (see discussion).
+
+For the final requirement, we have used Ilastik \citep{ilastik} in our own work on EM images, gPb \citep{globalpb} for natural images, or the probability maps provided by \cite{Ciresan:2012vi} for the SNEMI3D challenge.
+Gala is agnostic about the origin of the input probability maps, both theoretically and in this implementation.
 
 Given the above, we create a region adjacency graph, or RAG (implemented in \texttt{\small gala.agglo.Rag}) corresponding to the training superpixel and probability maps, and perform repeated training agglomerations of the superpixels while comparing against the ground truth (\texttt{\small Rag.learn\_agglomerate}).
 This produces a training set, to which we can fit a classifier, which will then prioritize merges in a test volume to segment.
