@@ -118,7 +118,7 @@ The algorithm, called GALA (graph-based active learning of agglomeration), works
 It thus accumulates a training dataset used to fit a classifier, which guides subsequent agglomeration decisions.
 Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
-GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remained top-ranked for 8 months in the SNEMI3D challenge, ahead of tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv}, comprising about 70 submissions.
+GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remained top-ranked for 8 months in the SNEMI3D challenge, ahead of tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv} (REF: Tasdizen paper 2014), comprising about 70 submissions.
 See Figure \ref{fig:01} for two segmentation examples obtained with the gala library.
 
 Since we have described the details of the GALA algorithm in detail elsewhere (REF), in this paper we focus on the design aspects of our implementation.
