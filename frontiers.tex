@@ -185,7 +185,8 @@ watershed_train = imio.read_h5_stack('train-ws.lzf.h5')
 }
 
 Next, we create a feature manager.
-These are extensible and composable, as detailed in section \ref{sec:feature-man}.
+These can be concatenated using the \texttt{\small Composite} manager.
+Managers are covered in more detail in section \ref{sec:feature-man}.
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -215,7 +216,7 @@ rf = classify.DefaultRandomForest().fit(X, y)
 \end{minted}
 }
 
-By composing the classifier and the feature map, we obtain a policy: a function whose input is a graph and two nodes (representing segments) and whose output is a number in [0, 1].
+By composing the feature map and the classifier, we obtain a policy: a function whose input is a graph and two nodes (representing segments) and whose output is a number in [0, 1].
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -223,8 +224,10 @@ learned_policy = agglo.classifier_probability(fc, rf)
 \end{minted}
 }
 
-This policy can be used to segment a test (previously unseen) volume.
+This policy is then used to segment a test (previously unseen) volume.
 We agglomerate the superpixels until the classifier returns a merge probability of 0.5, which corresponds to even odds that the merge is a true or false merge.
+(This assumes a well-calibrated classifier, meaning that the output corresponds to the probability of a sample feature vector belonging to the "+1" class.
+Random forests have been shown to be reasonably well-calibrated (REF).)
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -237,35 +240,12 @@ seg_test1 = g_test.get_segmentation()
 \end{minted}
 }
 
-We've made gala \emph{multichannel agnostic}, so that \texttt{\small agglo.Rag} and all of the existing feature managers can receive as input a multichannel probability map and transparently compute the corresponding features.
-
-{\small
-\begin{minted}[samepage=true]{python}
-# the same approach works with a multi-channel probability map
-p4_train = imio.read_h5_stack('train-p4.lzf.h5')
-# note: the feature manager works transparently with multiple channels!
-g_train4 = agglo.Rag(ws_train, p4_train, feature_manager=fc)
-(X4, y4, w4, merges4) = g_train4.learn_agglomerate(gt_train, fc)[0]
-y4 = y4[:, 0]
-rf4 = classify.DefaultRandomForest().fit(X4, y4)
-learned_policy4 = agglo.classifier_probability(fc, rf4)
-p4_test = imio.read_h5_stack('test-p4.lzf.h5')
-g_test4 = agglo.Rag(ws_test, p4_test, learned_policy4, feature_manager=fc)
-g_test4.agglomerate(0.5)
-seg_test4 = g_test4.get_segmentation()
-\end{minted}
-}
-
 Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary \citep{Arbelaez:jg}, median boundary, superpixel affinity learning \citep{Ren:2003jg} (which we also call "flat" learning), and LASH \citep{Jain:2011vr}.
+These are invoked simply by using a different \texttt{\small merge\_priority\_function} keyword argument, or calling \texttt{\small agglo.Rag.learn\_agglomerate} with different parameters.
 
-{\small
-\begin{minted}[samepage=true]{python}
-g_testm = agglo.Rag(ws_test, pr_test,
-                    merge_priority_function=agglo.boundary_mean)
-g_testm.agglomerate(0.5)
-seg_testm = g_testm.get_segmentation()
-\end{minted}
-}
+The gala API presents a simple tool to obtain state of the art segmentations, and also allows the exploration of a complete set of hierarchical agglomerative segmentation strategies.
+Further, because the segmentation strategy is learned, it can be applied with very little modification to many different domains, as demonstrated by its success in natural image segmentation as well as two different kinds of EM data.
+
 
 \subsection{Segmentation evaluation module}
 
