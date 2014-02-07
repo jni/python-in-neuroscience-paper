@@ -335,27 +335,20 @@ Therefore, a more efficient strategy is to cache a sum of the pixel probabilitie
 Then, when two boundaries are combined, their probability sums are added together, as are their counts, and the new average probability can be computed by dividing the new sum by the new count, in constant time.
 This caching turns a quadratic operation into a linear one.
 
-The above concept can be generalized to \emph{any} feature.
+The above concept can be generalized to a large class of features.
 We found that, in many cases, caching intermediate computations dramatically improved the time complexity of feature computation.
-For example, to compute the \emph{variance} of the pixel probabilities, we must cache the sum of the \emph{squared} pixel probabilities, along with simple sum and counts.
+For example, to compute the standard deviation of the pixel probabilities, we must cache the sum of the squared pixel probabilities, along with simple sum and counts.
 To compute a histogram, we cache the unnormalised histogram, and each bin is summed when two boundaries are combined.
 
 We therefore devised a single class, which we call a feature manager, that is responsible for defining the cached values, and for computing the feature vector from the cached values.
-This has enabled less obvious features, including, for example, many based on the convex hull of the segment.
+This has enabled less obvious features, including, for example, some based on the convex hull of the segment.
 The convex hull feature manager stores as a cache the convex hull of each node.
-When two nodes are merged, the resulting convex hull can be computed faster by starting from the two initial hulls, rather than from the newly formed segment.
+When two nodes are merged, the resulting convex hull can be computed faster by starting from the two initial hulls, rather than from the newly formed segment, since these have fewer vertices than the segments themselves.
 The manager then uses the hull to compute features such as segment convexity, by comparing the volume of the convex hull to the volume of the segment.
 
-Developing a feature manager is easy: subclassing \texttt{\small features.base.Null}, dropping the \texttt{.py} file in the features folder, and optionally updating the \texttt{\small \_\_init\_\_.py} for easy import.
-As an example, a recently added feature manager is the so-called ``inclusiveness''.
-In 3D EM images, it is not biologically plausible that one segment would be enclosed within another.
-Early on, we developed the idea of removing these inclusions by automatically merging the enclosed segment to the enveloping one, regardless of merge priority.
-However, we later realised that this is only the extremum of a continuous set of features that we called "inclusiveness".
-These include, for a pair of nodes $u$ and $v$, the size of the boundary between $u$ and $v$ divided by the total size of all boundaries around $u$, as well as the size divided by all the boundaries around $v$.
-
-The GitHub pull request creating this manager can be found at:
-
-\url{https://github.com/jni/ray/pulls?direction=desc&page=1&sort=created&state=closed}
+We have strived to make it easy to develop new feature managers, which will be useful as new, more sophisticated 3D segmentation features are developed (REF Jain 2014).
+A GitHub pull request creating a new manager can be found at:
+\url{https://github.com/jni/ray/pull/51}
 
 \subsection{Classifier abstraction}
 
