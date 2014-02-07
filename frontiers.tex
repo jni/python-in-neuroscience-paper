@@ -282,42 +282,22 @@ print(results)
 
 This is interpreted as follows: the undersegmentation VI of the watershed superpixels compared to the ground truth segmentation is 0.18 bits.
 That is, the average watershed basin will have slightly over 97\% overlap with one ground truth body and 3\% with another (since $-0.97 \log_2(0.97) - 0.03\log_2(0.03) = 0.19 \approx 0.185)$.
-In contrast, its oversegmentation VI is 1.64 bits, which means that most ground truth segments are split into more than 3 watershed pixels (the conditional entropy of a perfect $(1/3, 1/3, 1/3)$ split is 1.58 bits).
+In contrast, its oversegmentation VI is 1.64 bits, which means that most ground truth segments are split into more than 3 watershed pixels.
+(The conditional entropy of a perfect $(1/3, 1/3, 1/3)$ split is 1.58 bits. A perfect 50-50 split has an entropy of 1 bit.)
 
-Computing a set of VIs from an ultrametric contour map (UCM) \citep{Arbelaez:jg} is easily done with the \texttt{\small vi\_by\_threshold} function.
-From this we can generate the split VI plot (figure \ref{fig:02}) that we introduced in \cite{NunezIglesias:2013cd}, showing the tradeoff between oversegmentation and undersegmentation.
-This is in contrast to the commonly used plot of VI against segmentation threshold (see, e.g., \cite{Andres:2012vp}).
+By computing the two conditional entropies at each segmentation threshold, we generate the split VI plot (figure \ref{fig:02}) that we introduced in \cite{NunezIglesias:2013cd}, showing the tradeoff between oversegmentation and undersegmentation.
+In this plot, the x-axis is the undersegmentation conditional entropy, measuring false merges, and the y-axis is the corresponding oversegmentation measurement.
+Agglomerative segmentations begin somewhere close to the y-axis (lots of oversegmentation but very little undersegmentation).
+Then, a correct merge results in a downward move along the plot, while an incorrect merge causes a rightward move.
+The goal of a good segmentation algorithm, then, is to get as close as possible to (0, 0), a perfect match between automatic segmentation and ground truth.
 
-
-{\small
-\begin{minted}[samepage=true]{python}
-# generate split-vi plots for each method
-from matplotlib import pyplot as plt
-g_test.agglomerate(np.inf)
-g_test4.agglomerate(np.inf)
-g_testm.agglomerate(np.inf)
-ucms = [g.get_ucm() for g in [g_testm, g_test, g_test4]]
-vis = [ev.vi_by_threshold(u, gt_test, [0], [0])[1:] for u in ucms]
-colors = ['black', 'deepskyblue', 'orange']
-plt.figure(figsize=(3.3, 3.3))
-from gala import viz
-viz.plot_split_vi(vis, colors=colors)
-plt.xlim(0, 1); plt.ylim(0, 1)
-plt.legend(['mean agglomeration', 'gala 1-channel', 'gala 4-channel'],
-           loc=1, fontsize=8)
-plt.xticks(np.arange(0, 1.01, 0.2), fontsize=10)
-plt.yticks(np.arange(0, 1.01, 0.2), fontsize=10)
-plt.xlabel('false merges (bits)', fontsize=10)
-plt.ylabel('false splits (bits)', fontsize=10)
-plt.savefig('split-vi.png', dpi=300, bbox_inches='tight')
-\end{minted}
-}
+This approach is in contrast to the commonly used plot of VI against segmentation threshold (see, e.g., \cite{Andres:2012vp}), which hides the tradeoff information.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=85mm]{figure2}
 \end{center}
- \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ The split VI plot for our sample data. Lower and to the left is better. One should \emph{not} conclude that mean agglomeration is the best technique, since this plot was generated with a tiny sample dataset. For a scientific comparison, see \cite{NunezIglesias:2013cd}. }
+ \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ The split VI plot for the FIBSEM dataset in \cite{NunezIglesias:2013cd}. Lower and to the left is better. The stars indicate the point of lowest VI, and the circles indicate the point at threshold 0.5. }
 \end{figure}
 
 \subsection{Command-line interface}
