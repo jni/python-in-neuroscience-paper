@@ -304,46 +304,8 @@ This approach is in contrast to the commonly used plot of VI against segmentatio
 
 In addition to the flexible Python library interface, we developed a set of command-line scripts to perform common gala functions, such as training and segmenting.
 This is the primary way of interacting with gala in a production environment.
-For example, after determining suitable watershed parameters in an IPython environment \citep{Perez:2007}, these two commands produced our currently top-ranked entry to the SNEMI3D challenge \citep{snemi}:
-
-{\small
-\begin{minted}[samepage=true]{bash}
-$ ~/projects/gala/bin/gala-train -e 5 \
-    -F 'features.base.Composite(children=[\
-                       features.moments.Manager(), \
-                       features.histogram.Manager(25, 0, 1, [0.1, 0.5, 0.9]), \
-                       features.graph.Manager()])' \
-    -w train-2d-watershed.lzf.h5 \
-    --output-dir ~/data/snemi3d/ \
-    --experiment-name sn2d-opt \
-    --no-channel-data \
-    train-probabilities.lzf.h5 train-labels.lzf.h5 
-
-$ ~/projects/gala/bin/gala-segment -C \
-    -F 'features.base.Composite(children=[\
-                       features.moments.Manager(), \
-                       features.histogram.Manager(25, 0, 1, [0.1, 0.5, 0.9]), \
-                       features.graph.Manager()])' \
-    -w test-2d-watershed.lzf.h5 \
-    --output-dir ~/data/snemi3d \
-    -k sn2d-opt.classifier.h5 \
-    -t `seq -s ' ' -f %.2f 0 0.01 1` \
-    -R -J \
-    --experiment-name sn2d-opt \
-    test-probabilities.lzf.h5
-\end{minted}
-}
-
-The commands, though onerous, are quite simple.
-And, since they are based on \texttt{\small argparse}, both will provide helpful descriptions when presented with a \texttt{\small -h} flag.
-
-In \texttt{\small gala-train}, \texttt{\small -e} indicates the number of training epochs (see \cite{NunezIglesias:2013cd} for details), \texttt{\small -F} indicates the feature manager, specified as a Python expression, and \texttt{\small -w} indicates the superpixel map.
-The other options are self-explanatory, and finally, the two positional arguments are the probability map and the ground truth label volume.
-
-\texttt{\small gala-segment} has similar options, with \texttt{\small -R} disabling the Raveler format \citep{raveler} used in Janelia and \texttt{\small -J} disabling NeuroProof JSON output (see section \ref{section:np} and \cite{np}).
-Meanwhile, \texttt{\small -t} indicates the agglomeration thresholds at which segmentations should be output.
-
-Finally, in addition to the command line interface, the options above are available through a JSON configuration file format.
+The scripts are based on the excellent \texttt{\small argparse} module, so usage can be determined by running the scripts with the -h or --help flags.
+Each option can be provided on the command line or through a JSON configuration file format.
 
 
 \section{Design highlights}
