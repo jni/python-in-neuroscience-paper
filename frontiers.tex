@@ -392,18 +392,6 @@ Finally, we chose the heavy \texttt{\small Graph} class of the NetworkX library 
 However, this is ultimately unnecessary: we can store the original supervoxel graph using a much more efficient structure, such as \texttt{\small scipy.sparse.csc\_graph}, and maintain a merge tree.
 The graph at any level of the hierarchy can be rapidly constructed from this.
 
-\subsection{Alternate backends}
-\label{section:np}
-
-As a workaround for gala's memory efficiency issues, we developed an alternative interface called NeuroProof \citep{np}, which can be used as the backend for the gala algorithm by calling the \texttt{\small Stack} class in \texttt{\small gala.stack\_np} instead of \texttt{\small agglo.Rag}.
-NeuroProof implements region adjacency graphs in C++, with an optional translation layer to the Boost Graph Library \citep{bgl}.
-Unlike generic graph libraries such as NetworkX, NeuroProof is optimized to handle the specific operations of traversing an image label volume, constructing an adjacency graph, and merging graph nodes together.
-This specialization leads to time and memory savings over NetworkX over and above those offered by a C++ implementation.
-NeuroProof serializes the graph using a JSON format that contains a list of edges (node pairs) and a few relevant attributes, such as node sizes and edge weights.
-(The reference \texttt{\small agglo.Rag} implementation can also output to this format.)
-Currently, NeuroProof exists as a completely separate, more efficient alternative interface within the gala library.
-In the future, we intend to unify the two interface, and possibly more, by using a backend selection mechanism at runtime.
-
 \section{Conclusions}
 
 Like most academic software, gala is a mixture of new algorithms, some good design, and a variety of questionable decisions left over from a time of different priorities, but we hope that the existing and future functionality, the better parts of the software, and the lessons learned will be of value to the wider research community.
