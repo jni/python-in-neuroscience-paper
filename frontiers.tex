@@ -358,7 +358,7 @@ We therefore decided to use Vigra, a C++ image analysis and machine learning lib
 However, we recognized that a cross-compatible interface across libraries would allow rapid testing of various machine learning techniques.
 We therefore built a wrapper around Vigra to match \texttt{\small scikit-learn}'s estimator interface, particularly the \texttt{\small fit()}, \texttt{\small predict()}, and \texttt{\small predict\_proba()} methods.
 
-Because of this, it is trivial to use different classifiers for the learning and agglomeration steps of \texttt{\small gala}.
+Because of this, it is trivial to try different classifiers for the learning and agglomeration steps of \texttt{\small gala}.
 In particular, we have been able to use the recently vastly improved \texttt{\small RandomForestClassifier} from \texttt{\small scikit-learn} version 0.14 with no code changes.
 
 In short, by using established interfaces, we were able to future-proof our software.
