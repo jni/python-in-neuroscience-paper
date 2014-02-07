@@ -100,12 +100,12 @@ We also discuss the current limitations of the gala library and how we intend to
 Connectomics, the elucidation of complete neuronal circuits, requires resolutions as low as 5-10nm to distinguish the smallest neuronal processes, but also fields of view hundreds of micrometers across or more, as neurons can easily span those distances.
 This size disparity results in large image volumes of at least 10 gigavoxels and often orders of magnitude larger.
 Neurons are visible as distinct regions, or segments, in this 3-dimensional image volume.
-Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image \citep{Kreshuk:2011el, Jagadeesh:2013wn}, one can obtain the shapes, locations, and connectivity of all the neurons in an image volume, as has been demonstrated in (REFS: Chklovskii 2013, Helmstaedter 2013).
+Combining an accurate segmentation with the position of pre- and post-synaptic sites in the image \citep{Kreshuk:2011el, Jagadeesh:2013wn}, one can obtain the shapes, locations, and connectivity of all the neurons in an image volume, as has been demonstrated in \cite{Takemura:2013ea} and \cite{Helmstaedter:2013iv}.
 
 Various methods have been proposed (and implemented) to go from images to neuronal morphology and connectivity.
-(REF) used manual tracing of the midline of neuronal processes, along with manual annotation of synapses, to analyze a neuronal circuit.
-(REF) refined this approach by having multiple individuals trace the same neuron, thus allowing them to estimate the error rate of their traces.
-Manual tracing, however, cannot scale to the reconstruction of large neuronal circuits (REFS).
+\cite{Cardona:2010p7329} used manual tracing of the midline of neuronal processes, along with manual annotation of synapses, to analyze a neuronal circuit.
+\cite{Helmstaedter:2011it} refined this approach by having multiple individuals trace the same neuron, thus allowing them to estimate the error rate of their traces.
+Manual tracing alone, however, will not scale to the reconstruction of large neuronal circuits \citep{Helmstaedter:2013da}.
 An alternate strategy, then, has been to use automatic segmentation of the neurons in the image volume, followed by human proofreading of this segmentation \citep{Chklovskii:2010df}.
 Until recently, this proofreading was the rate-limiting step for neuronal reconstruction from EM images, for two reasons:
 first, the segmentation algorithms were (and still are) orders of magnitude too inaccurate to reconstruct even a single neuron without errors;
@@ -118,10 +118,10 @@ The algorithm, called GALA (graph-based active learning of agglomeration), works
 It thus accumulates a training dataset used to fit a classifier, which guides subsequent agglomeration decisions.
 Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
-GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remained top-ranked for 8 months in the SNEMI3D challenge, ahead of tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv} (REF: Tasdizen paper 2014), comprising about 70 submissions.
+GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remained top-ranked for 8 months in the SNEMI3D challenge, ahead of tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv, Liu:2014fk}, comprising about 70 submissions.
 See Figure \ref{fig:01} for two segmentation examples obtained with the gala library.
 
-Since we have described the details of the GALA algorithm in detail elsewhere (REF), in this paper we focus on the design aspects of our implementation.
+Since we have described the details of the GALA algorithm in detail elsewhere \citep{NunezIglesias:2013cd}, in this paper we focus on the design aspects of our implementation.
 We briefly present the Python application programming interface (API) and the command-line interface (CLI), before delving more deeply into particularly useful design choices, and finally discussing the current limitations of the library and future directions.
 
 
@@ -129,7 +129,7 @@ We briefly present the Python application programming interface (API) and the co
 \begin{center}
 \includegraphics[width=18cm]{figure1}
 \end{center}
- \textbf{\refstepcounter{figure}\label{fig:01} Figure \arabic{figure}.}{ Two sample automatic segmentations performed with gala. (A) The SNEMI3D test data. (B) Our favorite fuzzball from the Berkeley Segmentation Data Set. }
+ \textbf{\refstepcounter{figure}\label{fig:01} Figure \arabic{figure}.}{ Two sample automatic segmentations performed with gala. (A) The SNEMI3D test data. (B) Our favorite fuzzball from the Berkeley Segmentation Data Set. Clockwise from top-left: original image, gPb boundary probability map (using the cubehelix colormap), watershed superpixels, and final GALA segmentation using threshold of 0.5. }
 \end{figure}
 
 
@@ -139,10 +139,10 @@ We briefly present the Python application programming interface (API) and the co
 \subsection{Python API}
 
 GALA belongs a class of segmentation algorithms called agglomerative algorithms, in which segments are formed by merging smaller segments.
-Other examples include mean agglomeration (REF), the graphical models of (REF), and Learning to Agglomerate Superpixel Hierarchies (LASH) (REF), which is most similar to GALA.
+Other examples include mean agglomeration \citep{Arbelaez:jg}, the graphical models of \cite{Andres:2012ba} and \cite{Andres:2012vp}, and Learning to Agglomerate Superpixel Hierarchies (LASH) \citep{Jain:2011vr}, which is most similar to GALA.
 Agglomerative methods begin with an initial fine-grained segmentation known as an \emph{oversegmentation} or \emph{superpixel map}.
-The superpixel approach allows a massive reduction in computational cost, enabling the use of more sophisticated algorithms in the agglomerative step (REF).
-Additionally, it allows the use of different strategies to group pixels and regions, which may have very different properties (REF).
+The superpixel approach allows a massive reduction in computational cost, enabling the use of more sophisticated algorithms in the agglomerative step.
+Additionally, it allows the use of different strategies to group pixels and regions, which may have very different properties \citep{Ren:2003jg}.
 
 GALA uses machine learning to obtain a merge priority function or policy, which dictates which pair of segments to merge next.
 It has three main prerequisites to learn this function:
@@ -150,7 +150,7 @@ It has three main prerequisites to learn this function:
 \item a \emph{superpixel map} (or supervoxel), an initial fine-grained segmentation; and
 \item a \emph{gold standard segmentation}, that represents the true segmentation of a training volume; and
 \item a pixel-level intensity map, which is optional but required for most features.
-    This is usually the \emph{probability of boundary} between segments, but can be other things, such as the probability of the pixel belonging to a glial cell, or to an image of a cat (REF). The map can even be the input image itself.
+    This is usually the \emph{probability of boundary} between segments, but can be other things, such as the probability of the pixel belonging to a glial cell, or to an image of a cat \citep{Quoc:2012}. The map can even be the input image itself.
     Indeed, gala allows multi-channel pixel-level maps that are the concatenation of some or all of the above maps.
 \end{itemize}
 
@@ -226,8 +226,8 @@ learned_policy = agglo.classifier_probability(fc, rf)
 
 This policy is then used to segment a test (previously unseen) volume.
 We agglomerate the superpixels until the classifier returns a merge probability of 0.5, which corresponds to even odds that the merge is a true or false merge.
-(This assumes a well-calibrated classifier, meaning that the output corresponds to the probability of a sample feature vector belonging to the "+1" class.
-Random forests have been shown to be reasonably well-calibrated (REF).)
+(This assumes a well-calibrated classifier, meaning that the output corresponds to the probability of a sample feature vector belonging to the ``+1'' class.
+\cite{Bostrom:2008wl} showed random forests to be reasonably well-calibrated.)
 
 {\small
 \begin{minted}[samepage=true]{python}
@@ -240,7 +240,7 @@ seg_test1 = g_test.get_segmentation()
 \end{minted}
 }
 
-Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary \citep{Arbelaez:jg}, median boundary, superpixel affinity learning \citep{Ren:2003jg} (which we also call "flat" learning), and LASH \citep{Jain:2011vr}.
+Because gala was created as research software, it implements a number of additional agglomerative segmentation algorithms, including mean boundary, oriented mean boundary \citep{Arbelaez:jg}, median boundary, superpixel affinity learning \citep{Ren:2003jg} (which we also call ``flat'' learning), and LASH \citep{Jain:2011vr}.
 These are invoked simply by using a different \texttt{\small merge\_priority\_function} keyword argument, or calling \texttt{\small agglo.Rag.learn\_agglomerate} with different parameters.
 
 The gala API presents a simple tool to obtain state of the art segmentations, and also allows the exploration of a complete set of hierarchical agglomerative segmentation strategies.
@@ -291,20 +291,20 @@ Agglomerative segmentations begin somewhere close to the y-axis (lots of overseg
 Then, a correct merge results in a downward move along the plot, while an incorrect merge causes a rightward move.
 The goal of a good segmentation algorithm, then, is to get as close as possible to (0, 0), a perfect match between automatic segmentation and ground truth.
 
-This approach is in contrast to the commonly used plot of VI against segmentation threshold (see, e.g., \cite{Andres:2012vp}), which hides the tradeoff information.
+This approach is in contrast to the commonly used plot of VI against segmentation threshold (see, e.g., \cite{Andres:2012vp}), which obscures the tradeoff information.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=85mm]{figure2}
 \end{center}
- \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ The split VI plot for the FIBSEM dataset in \cite{NunezIglesias:2013cd}. Lower and to the left is better. The stars indicate the point of lowest VI, and the circles indicate the point at threshold 0.5. }
+ \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ The split VI plot for the FIBSEM dataset in \cite{NunezIglesias:2013cd}. Lower and to the left is better. The stars indicate the point of lowest VI, and the circles indicate the point at threshold 0.5. Shaded areas show standard error of the mean for $n=56$ observations (``flat'', ``agglo'') or $n=8$ observations (``mean''). The point labeled ``best'' represents the VI of a perfect merging of the initial (imperfect) superpixels.}
 \end{figure}
 
 \subsection{Command-line interface}
 
 In addition to the flexible Python library interface, we developed a set of command-line scripts to perform common gala functions, such as training and segmenting.
 This is the primary way of interacting with gala in a production environment.
-The scripts are based on the excellent \texttt{\small argparse} module, so usage can be determined by running the scripts with the -h or --help flags.
+The scripts make use of the excellent \texttt{\small argparse} module, so usage can be determined by running the scripts with the -h or --help flags.
 Each option can be provided on the command line or through a JSON configuration file format.
 
 
@@ -346,9 +346,9 @@ The convex hull feature manager stores as a cache the convex hull of each node.
 When two nodes are merged, the resulting convex hull can be computed faster by starting from the two initial hulls, rather than from the newly formed segment, since these have fewer vertices than the segments themselves.
 The manager then uses the hull to compute features such as segment convexity, by comparing the volume of the convex hull to the volume of the segment.
 
-We have strived to make it easy to develop new feature managers, which will be useful as new, more sophisticated 3D segmentation features are developed (REF Jain 2014).
+We have strived to make it easy to develop new feature managers, which will be useful as new, more sophisticated 3D segmentation features are developed \citep{Bogovic:2013wn}.
 A GitHub pull request creating a new manager can be found at:
-\url{https://github.com/jni/ray/pull/51}
+{\small \url{https://github.com/jni/ray/pull/51}}
 
 \subsection{Classifier abstraction}
 
