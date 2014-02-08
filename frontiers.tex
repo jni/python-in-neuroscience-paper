@@ -233,8 +233,9 @@ We agglomerate the superpixels until the classifier returns a merge probability 
 \begin{minted}[samepage=true]{python}
 # get the test data and make a RAG with the trained policy
 prob_map_test, watershed_test = (map(imio.read_h5_stack,
-                        ['test-p1.lzf.h5', 'test-ws.lzf.h5']))
-g_test = agglo.Rag(watershed_test, prob_map_test, learned_policy, feature_manager=fc)
+                                     ['test-p1.lzf.h5', 'test-ws.lzf.h5']))
+g_test = agglo.Rag(watershed_test, prob_map_test,
+                   learned_policy, feature_manager=fc)
 g_test.agglomerate(0.5) # best expected segmentation
 seg_test1 = g_test.get_segmentation()
 \end{minted}
