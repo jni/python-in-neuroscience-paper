@@ -73,7 +73,7 @@ $^{4}$ Video Computing Group, Department of Electrical Engineering, University o
 
 The aim in high-resolution connectomics is to reconstruct complete neuronal connectivity in a tissue.
 Currently, the only technology capable of resolving the smallest neuronal processes is electron microscopy (EM).
-Thus, a common approach is to perform (error-prone) automatic segmentation of EM images, followed by manual proofreading by experts to fix errors.
+Thus, a common approach to network reconstruction is to perform (error-prone) automatic segmentation of EM images, followed by manual proofreading by experts to fix errors.
 We have developed an algorithm and software library to not only improve the accuracy of the initial automatic segmentation, but also point out the image coordinates where it is likely to have made errors.
 Our software, called gala (graph-based active learning of agglomeration), improves the state of the art in agglomerative image segmentation.
 It is implemented in Python and makes extensive use of the scientific Python stack (numpy, scipy, networkx, scikit-learn, scikit-image, and others).
@@ -118,7 +118,9 @@ The algorithm, called GALA (graph-based active learning of agglomeration), works
 It thus accumulates a training dataset used to fit a classifier, which guides subsequent agglomeration decisions.
 Furthermore, through the probability output of the classifier, it can estimate its own confidence in whether two segments should be merged, and this estimate can be used for proofreading.
 
-GALA outperformed previous agglomeration methods in EM and natural image segmentation \citep{NunezIglesias:2013cd}, and it remained top-ranked for 8 months in the SNEMI3D challenge, ahead of tools developed specifically for anisotropic data \citep{snemi, Liu:2012ba, Kaynig:2013tv, Liu:2014fk}, comprising about 70 submissions.
+GALA outperformed previous agglomeration methods for automatic segmentation of an isotropic ($10 \times 10 \times 10$nm resolution) focused ion beam scanning electron microscope (FIBSEM) dataset of \emph{Drosophila} larva neuropil \citep{NunezIglesias:2013cd}.
+What's more, it remained top-ranked for 8 months in the SNEMI3D challenge, which uses anisotropic neuronal EM data of $6 \times 6 \times 30$nm resolution, against tools developed specifically for anisotropic data and comprising about 70 submissions \citep{snemi, Liu:2012ba, Kaynig:2013tv, Liu:2014fk}.
+Finally, thanks to the nD design of gala, we were able to segment 2D natural images and outperform state of the art agglomerative methods on the Berkeley Segmentation Data Set (BSDS) \citep{NunezIglesias:2013cd}.
 See Figure \ref{fig:01} for two segmentation examples obtained with the gala library.
 
 Since we have described the details of the GALA algorithm in detail elsewhere \citep{NunezIglesias:2013cd}, in this paper we focus on the design aspects of our implementation.
@@ -129,7 +131,7 @@ We briefly present the Python application programming interface (API) and the co
 \begin{center}
 \includegraphics[width=18cm]{figure1}
 \end{center}
- \textbf{\refstepcounter{figure}\label{fig:01} Figure \arabic{figure}.}{ Two sample automatic segmentations performed with gala. (A) The SNEMI3D test data. (B) Our favorite fuzzball from the Berkeley Segmentation Data Set. Clockwise from top-left: original image, gPb boundary probability map (using the cubehelix colormap), watershed superpixels, and final GALA segmentation using threshold of 0.5. }
+ \textbf{\refstepcounter{figure}\label{fig:01} Figure \arabic{figure}.}{ Two sample automatic segmentations performed with gala. (A) The SNEMI3D test data. The XZ plane (left) shows the initial, extremely oversegmented superpixel map, while the YZ (right) and XY (bottom) planes show the final segmentation returned by gala. Three complete neuronal segments are highlighted in 3D. Note that the segmentation is not perfect --- stubs on the magenta 3D segment are candidates for missed branches, and a big false split is apparent on the YZ cut plane (arrows). 3D shape features should improve these results \citep{Bogovic:2013wn}. (B) Our favorite fuzzball from the Berkeley Segmentation Data Set. Clockwise from top-left: original image, gPb boundary probability map (using the cubehelix colormap), watershed superpixels, and final GALA segmentation using threshold of 0.5. }
 \end{figure}
 
 
@@ -296,9 +298,9 @@ This approach is in contrast to the commonly used plot of VI against segmentatio
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=85mm]{figure2}
+\includegraphics[width=18cm]{figure2comp}
 \end{center}
- \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ The split VI plot for the FIBSEM dataset in \cite{NunezIglesias:2013cd}. Lower and to the left is better. The stars indicate the point of lowest VI, and the circles indicate the point at threshold 0.5. Shaded areas show standard error of the mean for $n=56$ observations (``flat'', ``agglo'') or $n=8$ observations (``mean''). The point labeled ``best'' represents the VI of a perfect merging of the initial (imperfect) superpixels.}
+ \textbf{\refstepcounter{figure}\label{fig:02} Figure \arabic{figure}.}{ Segmentation results for the focused ion beam scanning electron microscopy (FIBSEM) dataset of \emph{Drosophila melanogaster} larva brain in \cite{NunezIglesias:2013cd}. (A) Example automatic segmentation of an octant of the dataset. The complex shapes of the three highlighted segments illustrate the difficulty of segmenting neuronal data. (B) Split VI plot from \cite{NunezIglesias:2013cd}, showing superior segmentation accuracy by gala over competing agglomerative algorithms. Lower and to the left is better. The stars indicate the point of lowest VI, and the circles indicate the point at threshold 0.5. Shaded areas show standard error of the mean for $n=56$ observations (``flat'', ``agglo'') or $n=8$ observations (``mean''). The point labeled ``best'' represents the VI of a perfect merging of the initial (imperfect) superpixels.}
 \end{figure}
 
 \subsection{Command-line interface}
@@ -397,8 +399,9 @@ The graph at any level of the hierarchy can be rapidly constructed from this.
 
 Like most academic software, gala is a mixture of new algorithms, some good design, and a variety of questionable decisions left over from a time of different priorities.
 We wrote this description in the hope that the existing and future functionality, the better parts of the software, and the lessons learned will be of value to the wider research community.
-In particular, Don Knuth's famous maxim that ``premature optimization is the root of all evil'' \citep{knuth74opt} should not be taken to extremes: in our case, this has led to time and memory performance issues that have been difficult to resolve.
+We particularly emphasize that Don Knuth's famous maxim that ``premature optimization is the root of all evil'' \citep{knuth74opt} should not be taken to extremes: in our case, this has led to time and memory performance issues that have been difficult to resolve.
 Still, gala's success in segmenting not only the isotropic EM volume for which it was designed \citep{Glasner:2011uk, NunezIglesias:2013cd}, but also the BSDS natural image dataset and the SNEMI3D anisotropic EM dataset, suggests that it will be useful for some time to come.
+In future work, we will explore the potential of gala to segment other kinds of neuronal data, including 3D light microscopy data and 3D+t neuronal activity data.
 
 
 %%% Use this if adding the figures directly in the mansucript, if so, please remember to also upload the files when submitting your article
